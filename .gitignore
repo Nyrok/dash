@@ -1,0 +1,7 @@
+build/
+dash
+test_dash
+*.o
+history.txt
+shell.log
+.DS_Store
