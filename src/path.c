@@ -19,3 +19,11 @@ static void	*xalloc(void *ptr)
 	}
 	return (ptr);
 }
+
+void	path_init(void)
+{
+	g_shell.path = xalloc(malloc(sizeof(char *) * 2));
+	g_shell.path[0] = xalloc(strdup("/bin"));
+	g_shell.path[1] = NULL;
+	g_shell.path_count = 1;
+}
