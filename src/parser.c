@@ -35,3 +35,32 @@ int	split_parallel(char *line, char **commands, int max)
 	}
 	return (count);
 }
+
+/* Recopie la commande en isolant '<' par des espaces, ce qui permet de le
+ * traiter comme un token meme colle a un mot (ex: "wc -l<f"). */
+static char	*isolate_redir(const char *command)
+{
+	char	*out;
+	size_t	i;
+	size_t	j;
+
+	out = malloc(strlen(command) * 3 + 1);
+	if (out == NULL)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (command[i] != '\0')
+	{
+		if (command[i] == '<')
+		{
+			out[j++] = ' ';
+			out[j++] = '<';
+			out[j++] = ' ';
+		}
+		else
+			out[j++] = command[i];
+		i++;
+	}
+	out[j] = '\0';
+	return (out);
+}
