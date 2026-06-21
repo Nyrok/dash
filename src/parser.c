@@ -19,3 +19,19 @@ char	*trim_spaces(char *str)
 	end[1] = '\0';
 	return (str);
 }
+
+int	split_parallel(char *line, char **commands, int max)
+{
+	int		count;
+	char	*token;
+	char	*trimmed;
+
+	count = 0;
+	while ((token = strsep(&line, "&")) != NULL && count < max)
+	{
+		trimmed = trim_spaces(token);
+		if (*trimmed != '\0')
+			commands[count++] = trimmed;
+	}
+	return (count);
+}
