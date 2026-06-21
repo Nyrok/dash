@@ -59,3 +59,30 @@ typedef struct s_exec_task
 	char	command[HISTORY_LINE];
 }	exec_task;
 
+typedef struct s_thread_pool
+{
+	exec_task		tasks[QUEUE_MAX];
+	int				head;
+	int				tail;
+	int				size;
+	int				pending;
+	int				shutdown;
+	pthread_mutex_t	mutex;
+	pthread_cond_t	not_empty;
+	pthread_cond_t	done;
+}	thread_pool;
+
+/* Etat global partage entre tous les threads. Une seule instance : g_shell. */
+typedef struct s_shell
+{
+	shell_stats		stats;
+	command_history	hist;
+	command_queue	queue;
+	thread_pool		pool;
+
+	char			**path;      /* repertoires de recherche, NULL-termine */
+	int				path_count;
+
+	atomic_int		running;     /* drapeau d'arret lu/ecrit par plusieurs threads */
+	double			sum_exec_time; /* somme des temps, sert a la moyenne */
+
