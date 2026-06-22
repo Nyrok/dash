@@ -86,3 +86,15 @@ typedef struct s_shell
 	atomic_int		running;     /* drapeau d'arret lu/ecrit par plusieurs threads */
 	double			sum_exec_time; /* somme des temps, sert a la moyenne */
 
+	pthread_mutex_t	stats_mutex;
+	pthread_mutex_t	history_mutex;
+	pthread_mutex_t	queue_mutex;
+	pthread_mutex_t	log_mutex;
+	pthread_cond_t	queue_not_empty; /* bonus : reveil du consommateur */
+}	t_shell;
+
+extern t_shell	g_shell;
+
+/* --- error.c --- */
+void	print_error(void);
+
