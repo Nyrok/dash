@@ -20,3 +20,12 @@ SRCS = \
 	$(SRC_DIR)/pool.c \
 	$(SRC_DIR)/executor.c
 
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+
+NAME = dash
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LDFLAGS)
+
