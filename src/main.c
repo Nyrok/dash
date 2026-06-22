@@ -41,3 +41,18 @@ static void	shell_destroy(void)
 	pthread_mutex_destroy(&g_shell.log_mutex);
 	pthread_cond_destroy(&g_shell.queue_not_empty);
 }
+
+/* Crée les workers du pool. Renvoie 0 en cas de succès. */
+static int	start_workers(pthread_t *workers)
+{
+	int	i;
+
+	i = 0;
+	while (i < WORKER_COUNT)
+	{
+		if (pthread_create(&workers[i], NULL, worker_thread, NULL) != 0)
+			return (-1);
+		i++;
+	}
+	return (0);
+}
