@@ -64,3 +64,33 @@ static char	*isolate_redir(const char *command)
 	out[j] = '\0';
 	return (out);
 }
+
+char	**tokenize(char *command, int *argc)
+{
+	char	**argv;
+	char	*token;
+	char	*copy;
+	char	*cursor;
+
+	/* Borne haute du nombre de tokens : au plus un par caractere. */
+	argv = malloc(sizeof(char *) * (strlen(command) + 2));
+	copy = isolate_redir(command);
+	if (argv == NULL || copy == NULL)
+	{
+		free(argv);
+		free(copy);
+		return (NULL);
+	}
+	*argc = 0;
+	cursor = copy;
+	while ((token = strsep(&cursor, " \t")) != NULL)
+	{
+		if (*token == '\0')
+			continue;
+		argv[*argc] = strdup(token);
+		(*argc)++;
+	}
+	argv[*argc] = NULL;
+	free(copy);
+	return (argv);
+}
