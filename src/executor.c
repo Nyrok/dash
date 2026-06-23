@@ -55,3 +55,47 @@ static pid_t	spawn_process(char *full, char **argv, const char *infile)
 	}
 	return (pid);
 }
+
+/* Exécute une commande externe unique : tokenisation, redirection, résolution
+ * du chemin, fork/exec et attente. Appelée par les workers du pool, donc
+ * potentiellement par plusieurs threads en parallèle (stats sont protégées). */
+void	run_external_command(char *command)
+{
+	char	**argv;
+	char	*infile;
+	char	*full;
+	int		argc;
+	pid_t	pid;
+	int		status;
+	double	start;
+
+	argv = tokenize(command, &argc);
+	if (argv == NULL || argc == 0)
+	{
+		free_tokens(argv);
+		return ;
+	}
+	if (extract_redirection(argv, &argc, &infile) != 0)
+	{
+		print_error();
+		free_tokens(argv);
+		return ;
+	}
+	full = path_resolve(argv[0]);
+	if (full == NULL)
+		print_error();
+	else
+	{
+		start = now_seconds();
+		pid = spawn_process(full, argv, infile);
+		free(full);
+		if (pid < 0)
+			print_error();
+		else if (waitpid(pid, &status, 0) < 0)
+			print_error();
+		else
+			stats_add_process(now_seconds() - start);
+	}
+	free(infile);
+	free_tokens(argv);
+}
