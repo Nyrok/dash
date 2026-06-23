@@ -56,3 +56,21 @@ static int	start_workers(pthread_t *workers)
 	}
 	return (0);
 }
+
+/* Réveille les workers pour qu'ils constatent l'arrêt, puis les joint. */
+static void	stop_workers(pthread_t *workers)
+{
+	int	i;
+
+	pthread_mutex_lock(&g_shell.pool.mutex);
+	g_shell.pool.shutdown = 1;
+	pthread_cond_broadcast(&g_shell.pool.not_empty);
+	pthread_mutex_unlock(&g_shell.pool.mutex);
+	i = 0;
+	while (i < WORKER_COUNT)
+	{
+		if (pthread_join(workers[i], NULL) != 0)
+			print_error();
+		i++;
+	}
+}
