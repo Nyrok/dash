@@ -123,3 +123,18 @@ int	extract_redirection(char **argv, int *argc, char **infile)
 	}
 	return (0);
 }
+
+void	free_tokens(char **argv)
+{
+	int	i;
+
+	if (argv == NULL)
+		return ;
+	i = 0;
+	while (argv[i] != NULL)
+	{
+		free(argv[i]);
+		i++;
+	}
+	free(argv);
+}
