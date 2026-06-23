@@ -94,3 +94,32 @@ char	**tokenize(char *command, int *argc)
 	free(copy);
 	return (argv);
 }
+
+/* Retire le motif "< fichier" du tableau. Renvoie -1 si plusieurs '<' ou
+ * plusieurs fichiers a droite (erreur de syntaxe). */
+int	extract_redirection(char **argv, int *argc, char **infile)
+{
+	int	i;
+	int	found;
+
+	*infile = NULL;
+	found = 0;
+	i = 0;
+	while (argv[i] != NULL)
+	{
+		if (strcmp(argv[i], "<") == 0)
+		{
+			if (found || argv[i + 1] == NULL || argv[i + 2] != NULL)
+				return (-1);
+			*infile = strdup(argv[i + 1]);
+			free(argv[i]);
+			free(argv[i + 1]);
+			argv[i] = NULL;
+			*argc = i;
+			found = 1;
+			return (0);
+		}
+		i++;
+	}
+	return (0);
+}
