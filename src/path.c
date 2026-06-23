@@ -68,3 +68,20 @@ char	*path_resolve(const char *cmd)
 	}
 	return (NULL);
 }
+
+void	path_free(void)
+{
+	int	i;
+
+	if (g_shell.path == NULL)
+		return ;
+	i = 0;
+	while (g_shell.path[i] != NULL)
+	{
+		free(g_shell.path[i]);
+		i++;
+	}
+	free(g_shell.path);
+	g_shell.path = NULL;
+	g_shell.path_count = 0;
+}
