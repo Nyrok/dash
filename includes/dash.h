@@ -98,3 +98,20 @@ extern t_shell	g_shell;
 /* --- error.c --- */
 void	print_error(void);
 
+/* --- parser.c --- */
+char	*trim_spaces(char *str);
+int		split_parallel(char *line, char **commands, int max);
+char	**tokenize(char *command, int *argc);
+int		extract_redirection(char **argv, int *argc, char **infile);
+void	free_tokens(char **argv);
+
+/* --- path.c --- */
+void	path_init(void);
+void	path_set(char **dirs, int count);
+char	*path_resolve(const char *cmd);
+void	path_free(void);
+
+/* --- builtins.c --- */
+int		is_builtin(const char *cmd);
+int		run_builtin(char **argv, int argc);
+
