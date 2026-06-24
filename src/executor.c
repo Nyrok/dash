@@ -99,3 +99,39 @@ void	run_external_command(char *command)
 	free(infile);
 	free_tokens(argv);
 }
+
+/* Traite une ligne : découpe sur &, exécute les commandes intégrées dans le
+ * thread principal et soumet les commandes externes au pool de workers, puis
+ * attend la fin de la ligne avant de rendre la main. */
+void	execute_line(char *line)
+{
+	char	*commands[QUEUE_MAX];
+	char	**argv;
+	int		count;
+	int		argc;
+	int		i;
+	int		should_exit;
+
+	count = split_parallel(line, commands, QUEUE_MAX);
+	should_exit = 0;
+	i = 0;
+	while (i < count)
+	{
+		stats_add_command();
+		queue_push(commands[i]);
+		log_command(commands[i]);
+		argv = tokenize(commands[i], &argc);
+		if (argv != NULL && argc > 0 && is_builtin(argv[0]))
+		{
+			if (run_builtin(argv, argc))
+				should_exit = 1;
+		}
+		else if (argv != NULL && argc > 0)
+			pool_submit(commands[i]);
+		free_tokens(argv);
+		i++;
+	}
+	pool_wait_all();
+	if (should_exit)
+		g_shell.running = 0;
+}
