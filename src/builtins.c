@@ -37,3 +37,8 @@ static void	builtin_cd(char **argv, int argc)
 	if (argc != 2 || chdir(argv[1]) != 0)
 		print_error();
 }
+
+static void	builtin_path(char **argv, int argc)
+{
+	path_set(argv + 1, argc - 1);
+}
