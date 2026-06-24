@@ -31,3 +31,9 @@ static int	builtin_exit(int argc)
 	pthread_mutex_unlock(&g_shell.queue_mutex);
 	return (1); /* signale a la boucle principale de terminer */
 }
+
+static void	builtin_cd(char **argv, int argc)
+{
+	if (argc != 2 || chdir(argv[1]) != 0)
+		print_error();
+}
