@@ -74,3 +74,60 @@ static void	stop_workers(pthread_t *workers)
 		i++;
 	}
 }
+
+/* Reveille le thread historique pour qu'il constate la fermeture de la file. */
+static void	signal_shutdown(void)
+{
+	pthread_mutex_lock(&g_shell.queue_mutex);
+	g_shell.queue.closed = 1;
+	pthread_cond_signal(&g_shell.queue_not_empty);
+	pthread_mutex_unlock(&g_shell.queue_mutex);
+}
+
+int	main(int argc, char **argv)
+{
+	char		*line;
+	size_t		cap;
+	ssize_t		len;
+	pthread_t	history_tid;
+	pthread_t	monitor_tid;
+	pthread_t	workers[WORKER_COUNT];
+
+	if (argc != 1)
+	{
+		print_error();
+		(void)argv;
+		exit(1);
+	}
+	shell_init();
+	if (pthread_create(&history_tid, NULL, history_thread, NULL) != 0
+		|| pthread_create(&monitor_tid, NULL, monitor_thread, NULL) != 0
+		|| start_workers(workers) != 0)
+	{
+		print_error();
+		shell_destroy();
+		exit(1);
+	}
+	line = NULL;
+	cap = 0;
+	while (g_shell.running)
+	{
+		printf("%s", PROMPT);
+		fflush(stdout);
+		len = getline(&line, &cap, stdin);
+		if (len < 0) /* EOF (Ctrl-D) : on termine comme un exit */
+		{
+			g_shell.running = 0;
+			break ;
+		}
+		execute_line(line);
+	}
+	free(line);
+	stop_workers(workers);
+	signal_shutdown();
+	if (pthread_join(history_tid, NULL) != 0
+		|| pthread_join(monitor_tid, NULL) != 0)
+		print_error();
+	shell_destroy();
+	return (0);
+}
