@@ -42,3 +42,19 @@ static void	builtin_path(char **argv, int argc)
 {
 	path_set(argv + 1, argc - 1);
 }
+
+/* Renvoie 1 uniquement pour exit (demande de terminaison au thread principal). */
+int	run_builtin(char **argv, int argc)
+{
+	if (strcmp(argv[0], "exit") == 0)
+		return (builtin_exit(argc));
+	else if (strcmp(argv[0], "cd") == 0)
+		builtin_cd(argv, argc);
+	else if (strcmp(argv[0], "path") == 0)
+		builtin_path(argv, argc);
+	else if (strcmp(argv[0], "history") == 0)
+		history_print();
+	else if (strcmp(argv[0], "stats") == 0)
+		stats_print();
+	return (0);
+}
