@@ -115,3 +115,26 @@ void	path_free(void);
 int		is_builtin(const char *cmd);
 int		run_builtin(char **argv, int argc);
 
+/* --- executor.c --- */
+void	execute_line(char *line);
+void	run_external_command(char *command);
+
+/* --- pool.c (bonus thread pool) --- */
+void	pool_init(void);
+void	pool_destroy(void);
+void	pool_submit(const char *command);
+void	pool_wait_all(void);
+void	*worker_thread(void *arg);
+
+/* --- stats.c --- */
+void	stats_add_command(void);
+void	stats_add_process(double exec_time);
+void	stats_print(void);
+
+/* --- history.c (thread) --- */
+void	*history_thread(void *arg);
+void	history_add(const char *line);
+void	history_print(void);
+void	queue_push(const char *line);
+int		queue_pop(char *out);
+
