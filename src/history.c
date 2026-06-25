@@ -48,3 +48,16 @@ int	queue_pop(char *out)
 	pthread_mutex_unlock(&g_shell.queue_mutex);
 	return (1);
 }
+
+void	history_add(const char *line)
+{
+	pthread_mutex_lock(&g_shell.history_mutex);
+	if (g_shell.hist.count < HISTORY_MAX)
+	{
+		strncpy(g_shell.hist.history[g_shell.hist.count], line,
+			HISTORY_LINE - 1);
+		g_shell.hist.history[g_shell.hist.count][HISTORY_LINE - 1] = '\0';
+		g_shell.hist.count++;
+	}
+	pthread_mutex_unlock(&g_shell.history_mutex);
+}
