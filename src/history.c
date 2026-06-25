@@ -61,3 +61,17 @@ void	history_add(const char *line)
 	}
 	pthread_mutex_unlock(&g_shell.history_mutex);
 }
+
+void	history_print(void)
+{
+	int	i;
+
+	pthread_mutex_lock(&g_shell.history_mutex);
+	i = 0;
+	while (i < g_shell.hist.count)
+	{
+		printf("%d %s\n", i + 1, g_shell.hist.history[i]);
+		i++;
+	}
+	pthread_mutex_unlock(&g_shell.history_mutex);
+}
