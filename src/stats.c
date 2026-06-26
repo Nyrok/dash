@@ -24,3 +24,12 @@ void	stats_add_process(double exec_time)
 		= g_shell.sum_exec_time / g_shell.stats.total_processes;
 	pthread_mutex_unlock(&g_shell.stats_mutex);
 }
+
+void	stats_print(void)
+{
+	pthread_mutex_lock(&g_shell.stats_mutex);
+	printf("Commandes exécutées : %d\n", g_shell.stats.total_commands);
+	printf("Processus lancés : %d\n", g_shell.stats.total_processes);
+	printf("Temps moyen : %.2f s\n", g_shell.stats.average_exec_time);
+	pthread_mutex_unlock(&g_shell.stats_mutex);
+}
