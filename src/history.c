@@ -95,3 +95,25 @@ static void	history_save(void)
 	if (fclose(f) != 0)
 		print_error();
 }
+
+/* Boucle du thread historique. Consomme la file jusqu'a fermeture, puis
+ * effectue une derniere sauvegarde avant de se terminer proprement. */
+void	*history_thread(void *arg)
+{
+	char	line[HISTORY_LINE];
+	int		since_save;
+
+	(void)arg;
+	since_save = 0;
+	while (queue_pop(line))
+	{
+		history_add(line);
+		if (++since_save >= 5) /* sauvegarde periodique */
+		{
+			history_save();
+			since_save = 0;
+		}
+	}
+	history_save();
+	return (NULL);
+}
