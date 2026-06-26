@@ -138,3 +138,10 @@ void	history_print(void);
 void	queue_push(const char *line);
 int		queue_pop(char *out);
 
+/* --- monitor.c (thread) --- */
+void	*monitor_thread(void *arg);
+
+/* --- log.c (bonus) --- */
+void	log_command(const char *cmd);
+
+#endif
