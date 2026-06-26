@@ -75,3 +75,23 @@ void	history_print(void)
 	}
 	pthread_mutex_unlock(&g_shell.history_mutex);
 }
+
+static void	history_save(void)
+{
+	FILE	*f;
+	int		i;
+
+	f = fopen(HISTORY_SAVE_FILE, "w");
+	if (f == NULL)
+		return ;
+	pthread_mutex_lock(&g_shell.history_mutex);
+	i = 0;
+	while (i < g_shell.hist.count)
+	{
+		fprintf(f, "%d %s\n", i + 1, g_shell.hist.history[i]);
+		i++;
+	}
+	pthread_mutex_unlock(&g_shell.history_mutex);
+	if (fclose(f) != 0)
+		print_error();
+}
