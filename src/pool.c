@@ -12,3 +12,10 @@ void	pool_init(void)
 	pthread_cond_init(&g_shell.pool.not_empty, NULL);
 	pthread_cond_init(&g_shell.pool.done, NULL);
 }
+
+void	pool_destroy(void)
+{
+	pthread_mutex_destroy(&g_shell.pool.mutex);
+	pthread_cond_destroy(&g_shell.pool.not_empty);
+	pthread_cond_destroy(&g_shell.pool.done);
+}
