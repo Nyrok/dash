@@ -43,3 +43,36 @@ void	pool_wait_all(void)
 		pthread_cond_wait(&g_shell.pool.done, &g_shell.pool.mutex);
 	pthread_mutex_unlock(&g_shell.pool.mutex);
 }
+
+/* Boucle d'un worker : attend une tâche, l'exécute hors section critique,
+ * puis signale la fin quand plus aucune tâche n'est en cours. */
+void	*worker_thread(void *arg)
+{
+	exec_task	task;
+
+	(void)arg;
+	while (1)
+	{
+		pthread_mutex_lock(&g_shell.pool.mutex);
+		while (g_shell.pool.size == 0 && !g_shell.pool.shutdown)
+			pthread_cond_wait(&g_shell.pool.not_empty, &g_shell.pool.mutex);
+		if (g_shell.pool.size == 0 && g_shell.pool.shutdown)
+		{
+			pthread_mutex_unlock(&g_shell.pool.mutex);
+			break ;
+		}
+		task = g_shell.pool.tasks[g_shell.pool.head];
+		g_shell.pool.head = (g_shell.pool.head + 1) % QUEUE_MAX;
+		g_shell.pool.size--;
+		pthread_mutex_unlock(&g_shell.pool.mutex);
+
+		run_external_command(task.command);
+
+		pthread_mutex_lock(&g_shell.pool.mutex);
+		g_shell.pool.pending--;
+		if (g_shell.pool.pending == 0)
+			pthread_cond_signal(&g_shell.pool.done);
+		pthread_mutex_unlock(&g_shell.pool.mutex);
+	}
+	return (NULL);
+}
