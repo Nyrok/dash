@@ -50,3 +50,12 @@ coverage:
 	./test_cov
 	gcov -n $(TEST_SRCS) | grep -A1 "File '$(SRC_DIR)" || true
 
+clean:
+	rm -rf $(OBJ_DIR) test_dash test_cov *.gcda *.gcno *.gcov
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
+
+.PHONY: all test coverage clean fclean re
