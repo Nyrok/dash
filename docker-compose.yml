@@ -1,0 +1,10 @@
+services:
+  dash:
+    container_name: dash
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./:/app"
+    stdin_open: true
+    tty: true
