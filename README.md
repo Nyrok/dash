@@ -50,3 +50,26 @@ activées.
 
 ## Exécution
 
+```
+./dash
+dash> ls -la /tmp
+dash> wc -l < fichier.txt
+dash> sleep 5 & ls & pwd
+dash> exit
+```
+
+L'interpréteur ne prend aucun argument ; tout argument provoque une erreur.
+
+## Tests
+
+```
+make test        # compile et lance toutes les suites
+make coverage    # couverture via gcov
+```
+
+Les tests unitaires (framework maison MinUnit) sont organisés par module dans
+`tests/` : un fichier `test_<module>.c` par scope (parser, path, stats,
+historique, builtins, pool, logs), agrégés par `tests/test_main.c`.
+
+## Détection de fuites mémoire
+
