@@ -47,3 +47,20 @@
 
 = Introduction
 
+`dash++` (Dauphine Advanced Shell) est un interpréteur de commandes écrit en C.
+Au comportement classique d'un shell (lire une ligne, créer un processus
+enfant, exécuter la commande, attendre sa fin) il ajoute une dimension
+concurrente : plusieurs threads coopèrent autour de structures partagées pour
+tenir un historique, produire des statistiques et superviser l'activité en
+temps réel.
+
+Le programme lit les commandes avec `getline`, résout les exécutables via un
+chemin de recherche, et lance chaque commande externe par `fork` puis `execv`.
+Un thread d'historique, un thread de monitoring et un pool de workers entourent
+le thread principal. La vraie difficulté est le partage sûr de la mémoire entre
+ces fils d'exécution, et c'est ce que détaille ce rapport.
+
+= Choix techniques
+
+== Le langage C et ses appels système
+
