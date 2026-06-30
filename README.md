@@ -23,3 +23,30 @@ protégé par des mutex :
 | Monitoring      | Affichage des statistiques toutes les 5 secondes |
 | Workers (×4)    | Pool de threads exécutant les commandes externes (bonus) |
 
+Les structures partagées (`shell_stats`, `command_history`, `command_queue`)
+sont définies dans `includes/dash.h`. La file suit un schéma
+producteur/consommateur avec variable de condition (`pthread_cond_t`).
+
+## Fonctionnalités
+
+- Exécution de commandes externes via `fork` + `execv` avec recherche dans le
+  `path` (`access(..., X_OK)`).
+- Commandes intégrées : `exit`, `cd`, `path`, `history`, `stats`.
+- Redirection d'entrée `<` via `dup2`.
+- Exécution parallèle avec l'opérateur `&`.
+- Historique partagé et statistiques temps réel.
+- Robustesse aux espaces et tabulations multiples.
+- Bonus : variable de condition, pool de threads, journalisation concurrente
+  dans `shell.log`.
+
+## Compilation
+
+```
+make
+```
+
+Produit l'exécutable `dash`. Les options `-Wall -Wextra -Werror -std=c17` sont
+activées.
+
+## Exécution
+
