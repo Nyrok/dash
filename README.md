@@ -73,3 +73,28 @@ historique, builtins, pool, logs), agrégés par `tests/test_main.c`.
 
 ## Détection de fuites mémoire
 
+```
+valgrind --leak-check=full ./dash
+valgrind --tool=helgrind ./dash      # accès concurrents entre threads
+```
+
+## Docker
+
+Un environnement Debian (gcc-13, make, valgrind) est fourni pour compiler et
+tester sur Linux, indépendamment de la machine hôte.
+
+```
+docker compose build
+docker compose run --rm dash        # compile puis lance dash (invite dash>)
+```
+
+Le conteneur compile le projet puis démarre directement `dash`. Le code est
+monté en volume : une modification sur l'hôte est prise en compte sans
+reconstruire l'image. Pour lancer les tests : `docker compose run --rm dash make test`.
+
+## Nettoyage
+
+```
+make clean   # objets
+make fclean  # objets + exécutable
+```
