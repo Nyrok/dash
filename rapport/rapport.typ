@@ -19,3 +19,31 @@
 
 #let bleu = rgb("#003366")
 
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  gutter: 12pt,
+  align(top + left, image("Dauphine_logo.jpg", width: 3cm)),
+  align(top + center)[
+    #text(size: 18pt, weight: "bold", fill: bleu)[dash++]
+
+    #v(0.3em)
+    #text(size: 10pt)[Projet de Systèmes d'exploitation]
+
+    #v(0.2em)
+    #text(size: 8pt, style: "italic")[
+      Hamza Konte, Salim Bekri, Yanis Tounsi \
+      #text(size: 6.5pt, fill: gray.darken(50%))[Université Paris-Dauphine PSL] \
+      Juillet 2026
+    ]
+  ],
+  align(top + right)[
+    #text(size: 12pt, weight: "medium")[L3 MIAGE APP]
+  ],
+)
+
+#v(0.5em)
+#line(length: 100%, stroke: 1pt + bleu)
+#v(0.6em)
+
+= Introduction
+
