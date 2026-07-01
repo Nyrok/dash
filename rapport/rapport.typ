@@ -64,3 +64,43 @@ ces fils d'exécution, et c'est ce que détaille ce rapport.
 
 == Le langage C et ses appels système
 
+Le sujet impose le C et la bibliothèque standard uniquement. Ce cadre est en
+réalité l'intérêt du projet : on manipule directement les appels système Unix
+(`fork`, `execv`, `waitpid`, `dup2`, `access`, `chdir`) et les primitives
+POSIX de threads, sans couche d'abstraction#footnote[Pour l'API de gestion des
+processus et des threads, nous nous sommes appuyés sur Arpaci-Dusseau, R. & A.,
+_Operating Systems: Three Easy Pieces_, chapitres sur les processus (5), les
+threads (26) et les verrous (28).]. Le revers est un besoin constant
+de vigilance sur la mémoire et les codes de retour. Deux habitudes, héritées de
+nos projets précédents, ont servi de filet de sécurité : des commits fréquents
+et atomiques pour isoler vite un bug, et un passage systématique sous Valgrind
+(`--leak-check=full` pour les fuites, `--tool=helgrind` pour les accès
+concurrents).
+
+== Une architecture multithread
+
+Le programme s'organise autour d'une unique instance d'état global, `g_shell`
+(type `t_shell`), sur laquelle travaillent le thread principal, deux threads de
+service (historique, monitoring) et un pool de workers.
+
+#figure(
+  table(
+    columns: (auto, 1fr),
+    align: (left, left),
+    stroke: 0.5pt + bleu,
+    table.header([*Thread*], [*Responsabilité*]),
+    [Principal], [Prompt `dash> `, lecture (`getline`), analyse, exécution des
+      commandes intégrées, dépôt des commandes dans les files (producteur).],
+    [Historique], [Retire les commandes de la file (rôle de consommateur), les
+      enregistre et sauvegarde périodiquement dans un fichier.],
+    [Monitoring], [Affiche toutes les 5 secondes un résumé de l'activité
+      (commandes, processus, temps moyen d'exécution).],
+    [Workers ($times 4$)], [Pool de threads (bonus) : exécutent les commandes
+      externes (`fork`/`execv`/`waitpid`) que le principal leur soumet.],
+  ),
+  caption: [Les threads et leurs rôles],
+) <threads>
+
+Le schéma suivant montre comment ces threads gravitent autour de l'état
+partagé. Chaque flèche porte le mutex qui protège l'accès correspondant.
+
