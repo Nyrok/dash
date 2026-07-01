@@ -160,3 +160,39 @@ jamais.
 
 = Le motif producteur / consommateur
 
+Le thread principal et le thread historique communiquent par une file bornée
+`command_queue`, sous la forme d'un tampon circulaire. Le principal y dépose
+chaque ligne ; l'historique la retire pour la traiter. Plutôt qu'une attente
+active côté consommateur, nous utilisons une variable de condition
+`queue_not_empty` : le thread historique dort tant que la file est vide et
+n'est réveillé que lorsqu'une commande arrive ou lorsque le shell se ferme.
+
+#figure(
+  fletcher.diagram(
+    node-stroke: 0.8pt + bleu,
+    node-fill: luma(245),
+    node-inset: 5pt,
+    spacing: (10mm, 6mm),
+
+    node((0, 0), [Producteur\ (principal)], name: <p>),
+    node((0, 1), [`lock(queue_mutex)`], shape: fletcher.shapes.rect, name: <pl>),
+    node((0, 2), [Écrit en `tail`,\ `size++`], shape: fletcher.shapes.rect, name: <pw>),
+    node((0, 3), [`cond_signal`\ `unlock`], shape: fletcher.shapes.rect, name: <ps>),
+
+    node((3, 0), [Consommateur\ (historique)], name: <c>),
+    node((3, 1), [`lock(queue_mutex)`], shape: fletcher.shapes.rect, name: <cl>),
+    node((3, 2), [file vide ?\ `cond_wait`], shape: fletcher.shapes.diamond, name: <cw>),
+    node((3, 3), [Lit en `head`,\ `size--`, traite], shape: fletcher.shapes.rect, name: <cr>),
+
+    edge(<p>, <pl>, "->"),
+    edge(<pl>, <pw>, "->"),
+    edge(<pw>, <ps>, "->"),
+    edge(<c>, <cl>, "->"),
+    edge(<cl>, <cw>, "->"),
+    edge(<cw>, <cr>, "->", label: text(7pt)[non]),
+    edge(<cw>, <cl>, "->", bend: 40deg, label: text(7pt)[oui, dort]),
+    edge(<ps>, <cw>, "-->", label: text(7pt)[réveille], label-side: left),
+  ),
+  caption: [Échange producteur / consommateur via la file et la condition],
+) <prodcons>
+
