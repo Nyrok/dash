@@ -104,3 +104,33 @@ service (historique, monitoring) et un pool de workers.
 Le schéma suivant montre comment ces threads gravitent autour de l'état
 partagé. Chaque flèche porte le mutex qui protège l'accès correspondant.
 
+#figure(
+  fletcher.diagram(
+    node-stroke: 0.8pt + bleu,
+    node-fill: luma(245),
+    node-inset: 6pt,
+    spacing: (18mm, 10mm),
+
+    node((0, 0), [Thread\ principal], name: <main>),
+    node((2, 0), [`g_shell`\ (état partagé)], shape: fletcher.shapes.hexagon,
+      fill: rgb("#dbe6f0"), name: <shell>),
+    node((4, 0), [Thread\ historique], name: <hist>),
+    node((2, 1.4), [Thread\ monitoring], name: <mon>),
+    node((0, 1.4), [Pool de workers\ ($times 4$)], name: <pool>),
+
+    edge(<main>, <shell>, "->", label: text(7pt)[`queue_mutex`],
+      label-side: left),
+    edge(<shell>, <hist>, "->", label: text(7pt)[`queue_mutex` + `cond`],
+      label-side: left),
+    edge(<hist>, <shell>, "->", bend: 30deg,
+      label: text(7pt)[`history_mutex`]),
+    edge(<shell>, <mon>, "->", label: text(7pt)[`stats_mutex`]),
+    edge(<main>, <pool>, "->", label: text(7pt)[`pool.mutex`], label-side: right),
+    edge(<pool>, <shell>, "->", label: text(7pt)[`stats_mutex`],
+      label-side: right),
+  ),
+  caption: [Architecture : threads de service et pool autour de `g_shell`],
+) <archi>
+
+== Les structures partagées
+
