@@ -196,3 +196,24 @@ n'est réveillé que lorsqu'une commande arrive ou lorsque le shell se ferme.
   caption: [Échange producteur / consommateur via la file et la condition],
 ) <prodcons>
 
+Le prédicat est retesté dans une boucle `while` (et non un simple `if`), ce qui
+protège des réveils intempestifs (_spurious wakeups_) où `pthread_cond_wait`
+rend la main sans qu'une commande soit réellement disponible.
+
+== Le pool de threads (bonus)
+
+Plutôt que de laisser le thread principal exécuter lui-même les commandes, nous
+avons ajouté un pool de quatre workers. Le principal se contente de traiter les
+commandes intégrées et de _soumettre_ les commandes externes au pool ; le
+premier worker libre prend la tâche en tête de file et réalise le
+`fork`/`execv`/`waitpid`. La répartition est donc automatique : sur une ligne
+`cmd1 & cmd2 & cmd3`, les trois commandes partent sur des workers différents et
+s'exécutent réellement en parallèle.
+
+Pour conserver le comportement d'un shell (l'invite ne réapparaît qu'une fois la
+ligne terminée), le principal compte les tâches soumises et attend leur
+achèvement sur une variable de condition `done` : chaque worker décrémente ce
+compteur et signale quand il retombe à zéro. Ce pool remplace l'ancienne boucle
+de `fork` manuelle et mesure au passage le temps de chaque commande
+individuellement, puisque chaque worker chronomètre la sienne.
+
