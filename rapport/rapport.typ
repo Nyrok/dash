@@ -134,3 +134,29 @@ partagé. Chaque flèche porte le mutex qui protège l'accès correspondant.
 
 == Les structures partagées
 
+Trois structures voyagent entre les threads. Chacune reçoit son propre mutex,
+ce qui évite qu'un accès à l'historique bloque une mise à jour des
+statistiques.
+
+#figure(
+  table(
+    columns: (auto, auto, 1fr),
+    align: (left, left, left),
+    stroke: 0.5pt + bleu,
+    table.header([*Structure*], [*Mutex*], [*Contenu*]),
+    [`shell_stats`], [`stats_mutex`], [`total_commands`, `total_processes`,
+      `average_exec_time`.],
+    [`command_history`], [`history_mutex`], [Tableau des commandes exécutées et
+      leur nombre.],
+    [`command_queue`], [`queue_mutex`], [Tampon circulaire borné, partagé entre
+      producteur et consommateur.],
+  ),
+  caption: [Structures partagées et verrou associé],
+) <structs>
+
+Le choix d'un mutex par structure, plutôt qu'un verrou global unique, réduit la
+contention : deux threads qui touchent des données différentes ne s'attendent
+jamais.
+
+= Le motif producteur / consommateur
+
