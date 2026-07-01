@@ -243,3 +243,32 @@ s'entrelacer avec un autre accès. Nous en identifions quatre.
 
 == Pourquoi un `count++` n'est pas atomique
 
+L'opération qui paraît la plus anodine, `count++`, se compile en trois
+instructions : charger la valeur en registre, l'incrémenter, la réécrire en
+mémoire. Si deux threads exécutent cette séquence en même temps sans
+protection, l'un peut écraser l'incrément de l'autre. Le tableau ci-dessous
+déroule un tel entrelacement, où deux incréments ne produisent qu'un `+1`.
+
+#figure(
+  table(
+    columns: (auto, 1fr, 1fr, auto),
+    align: (center, left, left, center),
+    stroke: 0.5pt + bleu,
+    table.header([*t*], [*Thread A*], [*Thread B*], [`count`]),
+    [1], [`reg_A ← count` (0)], [], [0],
+    [2], [], [`reg_B ← count` (0)], [0],
+    [3], [`reg_A ← reg_A + 1`], [], [0],
+    [4], [], [`reg_B ← reg_B + 1`], [0],
+    [5], [`count ← reg_A` (1)], [], [1],
+    [6], [], [`count ← reg_B` (1)], [1],
+  ),
+  caption: [Mise à jour perdue : deux incréments, résultat `count = 1`],
+) <lostupdate>
+
+Le compteur final tombe sous le nombre réel d'événements. Sur la file, le même
+type d'entrelacement sur `head`, `tail` et `size` fait lire une case pas encore
+écrite, écraser une commande pas encore consommée, ou désynchroniser `size` du
+contenu réel, jusqu'au dépassement d'indice.
+
+== Le rôle du mutex
+
