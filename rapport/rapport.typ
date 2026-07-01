@@ -217,3 +217,29 @@ compteur et signale quand il retombe à zéro. Ce pool remplace l'ancienne boucl
 de `fork` manuelle et mesure au passage le temps de chaque commande
 individuellement, puisque chaque worker chronomètre la sienne.
 
+= Analyse de concurrence
+
+== Sections critiques
+
+Une section critique est un bloc qui touche une donnée partagée et ne doit pas
+s'entrelacer avec un autre accès. Nous en identifions quatre.
+
+#figure(
+  table(
+    columns: (auto, auto, 1fr),
+    align: (left, left, left),
+    stroke: 0.5pt + bleu,
+    table.header([*Donnée*], [*Fichier*], [*Accès concurrents*]),
+    [Statistiques], [`stats.c`], [Plusieurs commandes lancées avec `&`
+      terminent au même instant et appellent `stats_add_process`.],
+    [Historique], [`history.c`], [Le thread historique écrit pendant que la
+      commande `history` lit.],
+    [File], [`history.c`], [Le producteur écrit en `tail` pendant que le
+      consommateur lit en `head` ; `head`, `tail`, `size` partagés.],
+    [Journal], [`log.c`], [Écritures concurrentes dans `shell.log`.],
+  ),
+  caption: [Les quatre sections critiques et leurs risques],
+) <critiques>
+
+== Pourquoi un `count++` n'est pas atomique
+
