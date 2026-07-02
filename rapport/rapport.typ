@@ -327,3 +327,39 @@ sauvegarde finale, et que le thread de monitoring s'arrête entre deux affichage
 
 = Fonctionnalités
 
+#figure(
+  table(
+    columns: (auto, 1fr),
+    align: (left, left),
+    stroke: 0.5pt + bleu,
+    table.header([*Fonctionnalité*], [*Mise en œuvre*]),
+    [Commandes externes], [`fork` + `execv`, exécutable trouvé via le chemin de
+      recherche et `access(…, X_OK)`.],
+    [Commandes intégrées], [`exit`, `cd`, `path`, `history`, `stats`.],
+    [Redirection `<`], [`STDIN` remplacé par le fichier via `dup2` dans
+      l'enfant.],
+    [Parallélisme `&`], [Les commandes sont soumises au pool de workers et
+      exécutées en parallèle, puis attendues avant l'invite suivante.],
+    [Historique], [Structure partagée + sauvegarde périodique.],
+    [Statistiques], [Compteurs et temps moyen protégés par mutex.],
+    [Robustesse], [`trim_spaces` et `strsep` absorbent espaces et tabulations
+      multiples.],
+  ),
+  caption: [Fonctionnalités demandées et leur réalisation],
+) <fonctions>
+
+Les commandes intégrées ne passent pas par un processus enfant. `path` remplace
+entièrement le chemin de recherche, `cd` exige exactement un argument, et `exit`
+n'en accepte aucun. Le chemin initial contient le seul répertoire `/bin`.
+
+Deux détails ont demandé attention. D'abord, les opérateurs `&` et `<` ne
+réclament pas d'espace autour d'eux : `ls&pwd` ou `wc<f` doivent fonctionner.
+Le découpage parallèle se fait donc caractère par caractère sur `&`, et une
+passe préalable isole chaque `<` par des espaces avant la tokenisation. Ensuite,
+dans l'enfant, après un `execv` en échec, nous appelons `_exit` et non `exit` :
+`exit` reviderait les tampons `stdio` hérités du parent par duplication de la
+mémoire au `fork`, ce qui ferait réapparaître en double des sorties déjà
+affichées.
+
+== Gestion des erreurs
+
