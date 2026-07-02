@@ -387,3 +387,27 @@ contrôle avec `valgrind --leak-check=full`, et les accès concurrents avec
 `helgrind`. Un `Dockerfile` (Debian, gcc-13, valgrind) permet
 de rejouer compilation et tests sur Linux, indépendamment de la machine hôte.
 
+= Limites connues
+
+Quelques choix méritent d'être signalés. La file `command_queue` est bornée à
+256 entrées : si le consommateur prenait durablement du retard sur le
+producteur, des commandes seraient ignorées côté historique. En pratique le
+thread historique est réveillé dès qu'une ligne arrive, donc ce cas ne se
+produit pas à vitesse de frappe humaine, mais la borne existe. Par ailleurs le
+thread de monitoring affiche son résumé toutes les cinq secondes même en
+l'absence d'activité, ce qui peut s'intercaler avec l'invite ; un affichage
+conditionné à un changement réel serait plus discret. Enfin, l'historique et
+les statistiques comptent aussi les commandes intégrées, ce qui nous a paru
+cohérent mais reste un choix d'interprétation du sujet.
+
+= Conclusion
+
+`dash++` couvre les fonctionnalités du sujet et les trois bonus proposés : la
+variable de condition qui réveille le consommateur, la journalisation
+concurrente dans `shell.log`, et le pool de threads qui exécute les commandes
+externes. L'expérience la
+plus parlante a été la suppression volontaire d'un verrou : les compteurs se
+mettent aussitôt à mentir et les chiffres changent à chaque exécution, ce qui
+rend tangible une notion qu'on ne voit d'habitude qu'au tableau. Nous avons
+retenu un verrouillage par structure et un arrêt piloté par la variable de
+condition, deux choix qui gardent le code lisible sans brider le parallélisme.
