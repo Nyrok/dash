@@ -272,3 +272,26 @@ contenu réel, jusqu'au dépassement d'indice.
 
 == Le rôle du mutex
 
+Un `pthread_mutex_t` garantit l'exclusion mutuelle : au plus un thread le
+détient à la fois. En encadrant la section critique, on rend la séquence
+atomique du point de vue des autres threads.
+
+```c
+pthread_mutex_lock(&g_shell.stats_mutex);
+g_shell.stats.total_processes++;
+g_shell.sum_exec_time += exec_time;
+g_shell.stats.average_exec_time =
+    g_shell.sum_exec_time / g_shell.stats.total_processes;
+pthread_mutex_unlock(&g_shell.stats_mutex);
+```
+
+== Ce qui se passe quand on retire le verrou
+
+Pour vérifier que cette protection sert à quelque chose, nous avons retiré les
+`pthread_mutex_lock`/`unlock` autour de `stats_add_process`, recompilé, puis
+lancé une ligne de 200 commandes parallèles (un `echo` répété séparé par `&`).
+Le compteur `total_processes` devrait toujours afficher 200. Sans le verrou, il
+descend en dessous et change d'une exécution à l'autre. Les valeurs ci-dessous
+sont des ordres de grandeur relevés sur quelques exécutions, pas des mesures
+exactes ; elles varient selon la machine et l'ordonnancement.
+
