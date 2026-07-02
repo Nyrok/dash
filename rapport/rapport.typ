@@ -363,3 +363,27 @@ affichées.
 
 == Gestion des erreurs
 
+Conformément au sujet, toute erreur, quelle qu'en soit la cause (syntaxe, appel
+système, commande introuvable), déclenche l'affichage du message unique
+`An error has occurred` sur la sortie d'erreur standard, et le shell reprend sa
+boucle. Les codes de retour de tous les appels système sont vérifiés.
+
+= Compilation et exécution
+
+Le projet se compile avec `make` (options `-Wall -Wextra -Werror -std=c17`) et
+produit l'exécutable `dash`, qui se lance sans argument. `make test` construit
+et exécute la suite de tests.
+
+= Tests
+
+Les tests unitaires (micro-framework MinUnit) sont répartis par module : un
+fichier `test_<module>.c` par scope (parser, path, stats, historique, builtins,
+pool, logs), agrégés par un runner commun. Ils couvrent l'analyse syntaxique, la
+résolution de chemin, les compteurs et la moyenne, la file
+producteur/consommateur, les commandes intégrées, et le pool (dont l'exécution
+réelle d'une commande par un worker). L'ensemble se lance par `make test` ; la
+cible `make coverage` mesure la couverture via `gcov`. L'absence de fuite se
+contrôle avec `valgrind --leak-check=full`, et les accès concurrents avec
+`helgrind`. Un `Dockerfile` (Debian, gcc-13, valgrind) permet
+de rejouer compilation et tests sur Linux, indépendamment de la machine hôte.
+
