@@ -295,3 +295,35 @@ descend en dessous et change d'une exécution à l'autre. Les valeurs ci-dessous
 sont des ordres de grandeur relevés sur quelques exécutions, pas des mesures
 exactes ; elles varient selon la machine et l'ordonnancement.
 
+#figure(
+  table(
+    columns: (auto, auto, auto, auto),
+    align: (left, center, center, center),
+    stroke: 0.5pt + bleu,
+    table.header([*Exécution*], [*Attendu*], [*Sans mutex*], [*Avec mutex*]),
+    [#1], [200], [187], [200],
+    [#2], [200], [193], [200],
+    [#3], [200], [181], [200],
+    [#4], [200], [190], [200],
+  ),
+  caption: [`total_processes` observé sur 4 rafales de 200 commandes],
+) <mesures>
+
+La moyenne `average_exec_time` prend en plus des valeurs aberrantes, car le
+thread moniteur lit `sum_exec_time` et `total_processes` dans un état
+transitoire, entre deux instructions de la mise à jour. En retirant
+`queue_mutex`, on voit des commandes dupliquées ou manquantes dans
+l'historique, et `helgrind` signale les accès concurrents non protégés. Le
+non-déterminisme des chiffres, pour une même entrée, est la signature d'une
+condition de course.
+
+== Arrêt propre
+
+À la sortie (`exit` ou Ctrl-D), le thread principal met `running` à 0, positionne
+`closed` sur la file et signale la condition. Le thread historique se réveille,
+vide ce qui reste dans la file, effectue une dernière sauvegarde puis se
+termine. Le `pthread_join` garantit que le programme ne quitte pas avant cette
+sauvegarde finale, et que le thread de monitoring s'arrête entre deux affichages.
+
+= Fonctionnalités
+
