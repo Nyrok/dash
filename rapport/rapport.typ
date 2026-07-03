@@ -400,6 +400,43 @@ conditionné à un changement réel serait plus discret. Enfin, l'historique et
 les statistiques comptent aussi les commandes intégrées, ce qui nous a paru
 cohérent mais reste un choix d'interprétation du sujet.
 
+= Ce que le projet nous a apporté
+
+Sur le plan technique, nous avons manipulé pour la première fois des primitives
+que le cours ne présente qu'en théorie : `pthread_cond_wait` et le prédicat
+retesté dans une boucle, l'exclusion mutuelle par mutex distincts, la différence
+entre `exit` et `_exit` après un `fork`, ou encore la nécessité d'un
+`atomic_int` pour un drapeau lu par plusieurs threads. Écrire un pool de
+workers nous a obligés à raisonner sur la synchronisation d'un côté producteur
+et d'un côté consommateur en même temps, ce qui est plus subtil qu'un simple
+`fork`/`wait`.
+
+Le projet nous a aussi appris à débusquer les bugs de concurrence, qui ne se
+reproduisent pas à chaque exécution. L'expérience de suppression d'un verrou a
+été notre meilleur outil pédagogique : voir un compteur se tromper de façon
+non déterministe rend concret ce qu'est une vraie race condition. Les outils
+comme `valgrind` et `helgrind` sont passés du statut de mots du cours à celui
+de réflexe de vérification.
+
+Enfin, découper le programme en modules à responsabilité unique, écrire un test
+par module et viser une bonne couverture nous a montré qu'un code testé se
+modifie sans peur : chaque refonte (l'ajout du pool, par exemple) était validée
+en une commande.
+
+= Utilisation de l'IA
+
+Nous avons utilisé un assistant IA comme outil d'appoint, surtout sur deux
+tâches. D'abord les tests : générer les cas limites (ligne vide, opérateurs
+collés, redirection mal formée) et la structure des suites par module nous a
+fait gagner beaucoup de temps, que nous avons réinvesti à vérifier que chaque
+test échoue bien quand il le doit. Ensuite le débogage : face aux bugs de
+concurrence, difficiles à reproduire, décrire le symptôme à l'IA nous a aidés à
+formuler des hypothèses (ordre des `lock`, réveil manqué d'une condition) que
+nous validions ensuite à la main avec `helgrind` et des exécutions répétées.
+
+La conception, l'architecture et les choix de synchronisation restent les
+nôtres ; l'IA a surtout accéléré la partie mécanique et la chasse aux erreurs.
+
 = Conclusion
 
 `dash++` couvre les fonctionnalités du sujet et les trois bonus proposés : la
